@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 """
 The objective of this project is to understand, implement, 
 and empirically measure the performance of two space allocation methods
@@ -18,7 +17,7 @@ class FAT:
 
     def __init__(self, block_count, block_size, fat_entry_size):
         """
-        Initializes FAT.
+        Initializes File Allocation Table.
 
         :param block_count: int
         :param block_size: int
@@ -57,13 +56,21 @@ class FAT:
     def create_file(self, file_id, file_length):
         """
         Allocates blocks in self.blocks to given file_id
-        Also updates self.fat.
+        Also updates fat dict.
 
         :param file_id: int
         :param file_length: int -> bytes
 
         :return: False -> failure, True -> success
         """
+
+        if file_id in self.fat.keys():
+            print("File already created!")
+            return False
+
+        if file_length < 0:
+            print("Length value must be positive integer!")
+            return False
 
         # bytes to blocks
         file_block_count = self._byte_to_block(file_length)
@@ -96,6 +103,14 @@ class FAT:
         :return:
         """
 
+        if file_id not in self.fat.keys():
+            print("File doesn't exist!")
+            return False
+
+        if byte_offset < 0:
+            print("Offset value must be positive integer!")
+            return False
+
         # bytes to block
         block_offset = self._byte_to_block(byte_offset)
 
@@ -117,6 +132,14 @@ class FAT:
         :return: False -> failure, True -> success
         """
 
+        if file_id not in self.fat.keys():
+            print("File doesn't exist!")
+            return False
+
+        if extension < 0:
+            print("Extension value must be positive integer!")
+            return False
+
         if self.capacity < extension:
             print("Not Enough Space!")
             return False
@@ -131,6 +154,9 @@ class FAT:
 
         self._allocate_fat(end, self.fat_blocks, extension + 1)
 
+        self.capacity -= extension
+        self.size += extension
+
         return True
 
     def shrink(self, file_id, shrinking):
@@ -142,6 +168,14 @@ class FAT:
 
         :return: False -> failure, True -> success
         """
+
+        if file_id not in self.fat.keys():
+            print("File doesn't exist!")
+            return False
+
+        if shrinking < 0:
+            print("Shrink value must be positive integer!")
+            return False
 
         file_size = self._find_size(file_id)
 
@@ -170,7 +204,10 @@ class FAT:
             else:
                 end = self.blocks[end]
 
-    """Helper Functions"""
+        self.capacity += shrinking
+        self.size -= shrinking
+
+    """ Utils """
 
     def _find_size(self, file_id):
         """
@@ -204,11 +241,6 @@ class FAT:
 
         for i in range(search_starts, self.block_count):
 
-            print(f"search stars: {search_starts}")
-            print(f"block: {blocks}")
-            print("allocating...")
-            print("end_index: ", end_index)
-
             if self.blocks[i] == 0:
 
                 print("empty: ", i)
@@ -221,6 +253,9 @@ class FAT:
                 end_index = i
 
                 blocks -= 1
+
+        if blocks == 1:
+            self.blocks[end_index] = -1
 
     def _byte_to_block(self, bytes_count):
         """
@@ -241,12 +276,10 @@ class FAT:
 
         print("FAT DIRECTORY")
         print("Capacity: ", self.capacity)
+        print("Size: ", self.size)
 
         for key in self.fat.keys():
             print(key, self.fat[key])
 
         print("FAT BLOCKS")
         print(self.blocks)
-
-
-
