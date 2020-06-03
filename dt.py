@@ -30,7 +30,6 @@ class DT:
         self.uniques = list(range(1, block_count + 1))
         random.shuffle(self.uniques)
 
-
         # create a list for files:
         #  0: not allocated
         # id: allocated to file with file_id = id.
@@ -131,9 +130,9 @@ class DT:
         file_block_size = self._byte_to_block(self.dt[file_id]['s'])
 
         # find end point for file
-        end_point = self.dt[file_id]['p'] + file_block_size - 1
+        end_point = self.dt[file_id]['p'] + file_block_size
 
-        while not self._all_empty(end_point, extension):
+        while not self._all_empty(end_point, extension)[0]:
             # remove empty spaces
             self._compact()
 
@@ -141,26 +140,15 @@ class DT:
             self._defragment(file_id)
 
             # after compaction and defragmentation new pointer
-            end_point = self.dt[file_id]['p'] + file_block_size - 1
+            end_point = self.dt[file_id]['p'] + file_block_size
 
-        for i in range(end_point, extension):
-            self.blocks[i] = file_id
+        for i in range(end_point, end_point + extension):
+            self.blocks[i] = self.uniques.pop(0)
 
         # set dt
         self.dt[file_id]['s'] = extension * self.block_size
         self.capacity -= extension
         self.size += extension
-
-
-
-
-
-
-
-
-
-
-
 
     def shrink(self, file_id, shrinking):
         """
@@ -210,7 +198,7 @@ class DT:
         Finds a start point for contiguous allocation.
 
         :param file_block_count: int -> blocks
-        :return: int
+        :return: int: -1 -> failure
         """
 
         start = -1
@@ -269,37 +257,67 @@ class DT:
             start = self.dt[file]['p']
             end = start + self._byte_to_block(self.dt[file]['s'])
 
-            for i in range(start, end):
+            key = self.blocks[start]
+            zeros = 0
 
-                key = self.blocks[i]
-                zeros = 0
+            j = start - 1
 
-                j = i - 1
+            while j >= 0 and self.blocks[j] == 0:
+                self.blocks[j + 1] = 0
+                zeros += 1
+                j -= 1
 
-                while j >= 0 and self.blocks[j] == 0:
-                    self.blocks[j + 1] = 0
-                    zeros += 1
-                    j -= 1
+            if zeros == 0:
+                continue
 
-                self.blocks[j + 1] = key
+            j += 1
+            self.blocks[j] = key
+
+            for i in range(start+1, end):
+                j += 1
+                self.blocks[j] = self.blocks[i]
+                self.blocks[i] = 0
 
             self.dt[file]['p'] -= zeros
 
+    def _defragment(self, file_id):
+
+        start = self.dt[file_id]['p']
+        end = start + self._byte_to_block(self.dt[file_id]['s'])
+
+        key = self.blocks[start]
+
+        nonzero = self._byte_to_block(self.dt[file_id]['s']) - 1
+        j = start + 1
+
+        while self.blocks[j] != 0:
+            nonzero += 1
+            j += 1
+
+        self.blocks[j] = key
+        self.blocks[start] = 0
+
+        for i in range(start + 1, end):
+            j += 1
+            self.blocks[j] = self.blocks[i]
+            self.blocks[i] = 0
+
+        self.dt[file_id]['p'] += nonzero
 
     def _byte_to_block(self, bytes_count):
-        """
-        Returns givens bytes count to blocks count.
+            """
+            Returns givens bytes count to blocks count.
 
-        :param bytes_count: int
-        :return: blocks: int
-        """
+            :param bytes_count: int
+            :return: blocks: int
+            """
 
-        if bytes_count % self.block_size == 0:
-            blocks = bytes_count // self.block_size
-        else:
-            blocks = (bytes_count // self.block_size) + 1
+            if bytes_count % self.block_size == 0:
+                blocks = bytes_count // self.block_size
+            else:
+                blocks = (bytes_count // self.block_size) + 1
 
-        return blocks
+            return blocks
 
 
 dt = DT(30, 5)
@@ -308,4 +326,4 @@ dt.create_file(1, 20)
 dt.create_file(2, 30)
 dt.create_file(3, 30)
 dt.shrink(2, 4)
-dt.create_file(4, 90)
+dt.extend(2, 5)
