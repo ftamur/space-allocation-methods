@@ -1,0 +1,6 @@
+File,Create,Extend,Shrink,Access,Create Rejected,Extend Rejected,Shrink Rejected,Access Rejected
+io/input_8_600_5_5_0.txt,600,555,0,582,397,365,0,176
+io/input_1024_200_5_9_9.txt,200,1396,1574,170,27,377,275,12
+io/input_1024_200_9_0_0.txt,200,0,0,409113,79,0,0,48055
+io/input_1024_200_9_0_9.txt,200,0,833,1605,0,0,154,42
+io/input_2048_600_5_5_0.txt,600,535,0,596,211,182,0,55

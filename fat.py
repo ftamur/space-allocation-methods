@@ -9,13 +9,10 @@ used in file systems, namely contiguous and linked allocation, against various i
 __author__ = "Firat Tamur"
 __email__ = "ftamur16@ku.edu.tr"
 
-BLOCK_SIZE = 10
-BLOCK_COUNT = 32768
-
 
 class FAT:
 
-    def __init__(self, block_count, block_size, fat_entry_size):
+    def __init__(self, block_size, block_count=32768, fat_entry_size=4):
         """
         Initializes File Allocation Table.
 
@@ -65,7 +62,7 @@ class FAT:
         """
 
         if file_id in self.fat.keys():
-            print("File already created!")
+            # print("File already created!")
             return False
 
         if file_length < 0:
@@ -76,7 +73,7 @@ class FAT:
         file_block_count = self._byte_to_block(file_length)
 
         if self.capacity < file_block_count:
-            print("Not Enough Space!")
+            # print("Not Enough Space!")
             return False
 
         self.capacity -= file_block_count
@@ -94,21 +91,22 @@ class FAT:
 
         return True
 
-    def access_file(self, file_id, byte_offset):
+    def access(self, file_id, byte_offset):
         """
         Accesses file with given byte_offset.
 
         :param file_id: int
         :param byte_offset: int -> bytes
-        :return:
+
+        :return: int
         """
 
         if file_id not in self.fat.keys():
-            print("File doesn't exist!")
+            # print("File doesn't exist!")
             return False
 
         if byte_offset < 0:
-            print("Offset value must be positive integer!")
+            # print("Offset value must be positive integer!")
             return False
 
         # bytes to block
@@ -133,15 +131,15 @@ class FAT:
         """
 
         if file_id not in self.fat.keys():
-            print("File doesn't exist!")
+            # print("File doesn't exist!")
             return False
 
         if extension < 0:
-            print("Extension value must be positive integer!")
+            # print("Extension value must be positive integer!")
             return False
 
         if self.capacity < extension:
-            print("Not Enough Space!")
+            # print("Not Enough Space!")
             return False
 
         end = self.fat[file_id]
@@ -207,6 +205,8 @@ class FAT:
         self.capacity += shrinking
         self.size -= shrinking
 
+        return True
+
     """ Utils """
 
     def _find_size(self, file_id):
@@ -243,8 +243,6 @@ class FAT:
 
             if self.blocks[i] == 0:
 
-                print("empty: ", i)
-
                 if blocks == 1:
                     self.blocks[end_index] = -1
                     break
@@ -272,14 +270,3 @@ class FAT:
 
         return blocks
 
-    def _print(self):
-
-        print("FAT DIRECTORY")
-        print("Capacity: ", self.capacity)
-        print("Size: ", self.size)
-
-        for key in self.fat.keys():
-            print(key, self.fat[key])
-
-        print("FAT BLOCKS")
-        print(self.blocks)
