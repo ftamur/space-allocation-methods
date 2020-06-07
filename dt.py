@@ -27,7 +27,7 @@ class DT:
 
         # create a list for files:
         #  0: not allocated
-        # id: allocated to file with file_id = id.
+        # random value: allocated.
         self.blocks = [0] * block_count
 
         # dt dictionary keeps each file_id and its file start pointer and file size.
@@ -50,7 +50,7 @@ class DT:
         """
 
         if file_id in self.dt.keys():
-            # print("File already exits!")
+            print("File already exits!")
             return False
 
         if file_length < 1:
@@ -104,7 +104,7 @@ class DT:
             return False
 
         if byte_offset > self.dt[file_id]['s']:
-            print("Byte offset must be smaller than file size!")
+            #print("Byte offset must be smaller than file size!")
             return False
 
         # bytes to blocks
@@ -327,7 +327,3 @@ class DT:
             blocks = (bytes_count // self.block_size) + 1
 
         return blocks
-
-
-
-

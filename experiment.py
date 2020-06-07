@@ -125,7 +125,7 @@ if __name__ == '__main__':
           'io/input_1024_200_9_0_9.txt', 'io/input_2048_600_5_5_0.txt']
 
     fat_time, fat_operations = experiment_(io, 'fat')
-    # dt_time, dt_operations = experiment_(io, 'dt')
+    dt_time, dt_operations = experiment_(io, 'dt')
 
     # print(fat_time)
     # print(fat_operations)
@@ -136,9 +136,9 @@ if __name__ == '__main__':
     # print(dt_time)
     # print(dt_operations)
     #
-    # dt_time.to_csv('output/dt_time.csv', index=False)
-    # dt_operations.to_csv('output/dt_operations.csv', index=False)
-    #
+    dt_time.to_csv('output/dt_time.csv', index=False)
+    dt_operations.to_csv('output/dt_operations.csv', index=False)
+
 
 
 

@@ -34,7 +34,7 @@ class FAT:
         self.fat = {'fat': 0}
 
         # allocate blocks for fat
-        self.fat_blocks = self._byte_to_block(fat_entry_size * block_count)
+        self.fat_blocks = int(self.block_count / ((self.block_size / 4) + 1)) + 1
 
         # From 0 to (fat_blocks - 1) allocated to fat.
         # We can start from index fat_blocks to allocate
@@ -66,28 +66,30 @@ class FAT:
             return False
 
         if file_length < 0:
-            print("Length value must be positive integer!")
+            # print("Length value must be positive integer!")
             return False
 
         # bytes to blocks
-        file_block_count = self._byte_to_block(file_length)
+        block_count = self._byte_to_block(file_length)
 
-        if self.capacity < file_block_count:
+        if self.capacity < block_count:
             # print("Not Enough Space!")
             return False
 
-        self.capacity -= file_block_count
-        self.size += file_block_count
-
         for i in range(self.fat_blocks, self.block_count):
             if self.blocks[i] == 0:
+
                 # set fat initial file to fat_blocks
                 self.fat[file_id] = i
 
                 # search block after start point and allocate them.
-                self._allocate_fat(i, i + 1, file_block_count)
+                self._allocate_fat(i, i + 1, block_count)
 
                 break
+
+
+        self.capacity -= block_count
+        self.size += block_count
 
         return True
 
@@ -168,17 +170,17 @@ class FAT:
         """
 
         if file_id not in self.fat.keys():
-            print("File doesn't exist!")
+            #print("File doesn't exist!")
             return False
 
         if shrinking < 0:
-            print("Shrink value must be positive integer!")
+            #print("Shrink value must be positive integer!")
             return False
 
         file_size = self._find_size(file_id)
 
         if file_size - shrinking < 1:
-            print("Too large shrink value!")
+            #print("Too large shrink value!")
             return False
 
         delete_starts = 0
@@ -269,4 +271,10 @@ class FAT:
             blocks = (bytes_count // self.block_size) + 1
 
         return blocks
+
+
+
+
+
+
 
